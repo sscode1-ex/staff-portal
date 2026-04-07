@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STAFF-PORTAL — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --border: #2a2a3a;
+    --accent: #ff6b35;
+    --accent2: #7c3aed;
+    --text: #e8e8f0;
+    --muted: #6b6b88;
+    --green: #22c55e;
+    --red: #ef4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh;
+  }
+
+  /* ── LOGIN ── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 60% 40%, #1a0a2e 0%, var(--bg) 70%);
+  }
+  .login-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 48px 40px;
+    width: 100%;
+    max-width: 380px;
+    text-align: center;
+  }
+  .login-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .login-logo span { color: var(--accent); }
+  .login-sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-bottom: 36px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .login-box input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 14px;
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-box input:focus { border-color: var(--accent); }
+  .btn-primary {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+    letter-spacing: 0.5px;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+  .btn-primary:active { transform: scale(0.98); }
+  .login-error { color: var(--red); font-size: 12px; margin-top: 10px; }
+
+  /* ── APP SHELL ── */
+  #app { display: none; }
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .header-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+  .header-logo span { color: var(--accent); }
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .logout-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .logout-btn:hover { color: var(--text); border-color: var(--text); }
+
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 32px 24px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .panel-body { padding: 24px; }
+
+  /* ── SEND MESSAGE ── */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-textarea { resize: vertical; min-height: 100px; }
+  .form-select option { background: var(--surface2); }
+
+  .send-btn {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .send-btn:hover { opacity: 0.9; }
+  .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toast {
+    margin-top: 12px;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .toast.success { background: rgba(34,197,94,0.15); color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+  .toast.error { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+
+  /* ── MESSAGE HISTORY ── */
+  .msg-list { display: flex; flex-direction: column; gap: 12px; }
+  .msg-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-left: 3px solid var(--accent);
+  }
+  .msg-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; }
+  .msg-body { color: var(--muted); font-size: 13px; margin-top: 4px; line-height: 1.5; }
+  .msg-meta { font-size: 11px; color: var(--muted); margin-top: 8px; opacity: 0.6; }
+  .empty-state { color: var(--muted); font-size: 13px; text-align: center; padding: 24px 0; }
+
+  /* ── STAFF LIST ── */
+  .staff-add {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .staff-add input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+  }
+  .staff-add input:focus { border-color: var(--accent); }
+  .btn-add {
+    background: var(--accent2);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+  .btn-add:hover { opacity: 0.9; }
+
+  .staff-list { display: flex; flex-direction: column; gap: 8px; }
+  .staff-item {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .staff-name { font-size: 14px; flex: 1; }
+  .staff-status {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+  .staff-status.active { background: rgba(34,197,94,0.15); color: var(--green); }
+  .staff-status.pending { background: rgba(107,107,136,0.2); color: var(--muted); }
+  .link-btn {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 5px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    transition: all 0.2s;
+  }
+  .link-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .del-btn {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s;
+  }
+  .del-btn:hover { color: var(--red); }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .tab {
+    padding: 14px 20px;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--muted);
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+  }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; padding: 24px; }
+  .tab-panel.active { display: block; }
+
+  @media (max-width: 768px) {
+    .main { grid-template-columns: 1fr; }
+    header { padding: 0 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">STAFF<span>-</span>PORTAL</div>
+    <div class="login-sub">Admin Access</div>
+    <input type="password" id="login-pw" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn-primary" onclick="doLogin()">SIGN IN</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-logo">STAFF<span>-</span>PORTAL</div>
+    <div class="header-right">
+      <span id="header-status">Loading...</span>
+      <button class="logout-btn" onclick="doLogout()">Logout</button>
+    </div>
+  </header>
+
+  <div class="main">
+    <!-- LEFT: Send + History -->
+    <div style="display:flex;flex-direction:column;gap:24px;">
+
+      <!-- SEND -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📣 Send Notification</span>
+        </div>
+        <div class="panel-body">
+          <div class="form-group">
+            <label class="form-label">Title</label>
+            <input class="form-input" id="msg-title" placeholder="e.g. Staff Update" value="Staff Update">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Message</label>
+            <textarea class="form-textarea" id="msg-body" placeholder="Type your message here..."></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Send To</label>
+            <select class="form-select" id="msg-target">
+              <option value="all">All Staff</option>
+            </select>
+          </div>
+          <button class="send-btn" id="send-btn" onclick="sendMessage()">
+            <span>⚡</span> SEND NOW
+          </button>
+          <div class="toast" id="send-toast"></div>
+        </div>
+      </div>
+
+      <!-- HISTORY -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">📋 Message History</span>
+          <button class="link-btn" onclick="loadMessages()">Refresh</button>
+        </div>
+        <div class="panel-body">
+          <div class="msg-list" id="msg-list">
+            <div class="empty-state">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Staff -->
+    <div class="panel">
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('staff')">👥 Staff</div>
+        <div class="tab" onclick="switchTab('links')">🔗 Links</div>
+      </div>
+
+      <div class="tab-panel active" id="tab-staff">
+        <div class="staff-add">
+          <input id="new-staff-name" placeholder="Staff name..." onkeydown="if(event.key==='Enter')addStaff()">
+          <button class="btn-add" onclick="addStaff()">+ Add</button>
+        </div>
+        <div class="staff-list" id="staff-list">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-links">
+        <div style="color:var(--muted);font-size:12px;margin-bottom:16px;line-height:1.6;">
+          Share each staff member's unique link. They open it on their phone and tap "Enable Notifications".
+        </div>
+        <div class="staff-list" id="links-list">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let adminPw = '';
+let staffData = [];
+const BASE = window.location.origin;
+
+// ── AUTH ──
+async function doLogin() {
+  const pw = document.getElementById('login-pw').value;
+  const res = await fetch('/api/auth', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({password: pw})
+  });
+  if (res.ok) {
+    adminPw = pw;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    loadAll();
+  } else {
+    document.getElementById('login-error').textContent = 'Incorrect password';
+  }
+}
+
+function doLogout() {
+  adminPw = '';
+  location.reload();
+}
+
+// ── LOAD ALL ──
+async function loadAll() {
+  await loadStaff();
+  await loadMessages();
+}
+
+// ── STAFF ──
+async function loadStaff() {
+  const res = await fetch('/api/staff', { headers: {'X-Admin-Password': adminPw} });
+  staffData = await res.json();
+  renderStaff();
+  renderLinks();
+  populateTargetSelect();
+  updateHeaderStatus();
+}
+
+function renderStaff() {
+  const el = document.getElementById('staff-list');
+  if (!staffData.length) { el.innerHTML = '<div class="empty-state">No staff added yet</div>'; return; }
+  el.innerHTML = staffData.map(s => `
+    <div class="staff-item">
+      <span class="staff-name">${s.name}</span>
+      <span class="staff-status ${s.fcm_token ? 'active' : 'pending'}">${s.fcm_token ? '● Active' : '○ Pending'}</span>
+      <button class="del-btn" onclick="deleteStaff(${s.id})" title="Remove">×</button>
+    </div>
+  `).join('');
+}
+
+function renderLinks() {
+  const el = document.getElementById('links-list');
+  if (!staffData.length) { el.innerHTML = '<div class="empty-state">No staff added yet</div>'; return; }
+  el.innerHTML = staffData.map(s => `
+    <div class="staff-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
+      <div style="display:flex;width:100%;align-items:center;justify-content:space-between;">
+        <span class="staff-name">${s.name}</span>
+        <button class="link-btn" onclick="copyLink('${s.token}', this)">Copy Link</button>
+      </div>
+      <span style="font-size:11px;color:var(--muted);word-break:break-all;">${BASE}/s/${s.token}</span>
+    </div>
+  `).join('');
+}
+
+function populateTargetSelect() {
+  const sel = document.getElementById('msg-target');
+  sel.innerHTML = '<option value="all">All Staff</option>' +
+    staffData.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+function updateHeaderStatus() {
+  const active = staffData.filter(s => s.fcm_token).length;
+  document.getElementById('header-status').textContent = `${active}/${staffData.length} staff active`;
+}
+
+async function addStaff() {
+  const name = document.getElementById('new-staff-name').value.trim();
+  if (!name) return;
+  await fetch('/api/staff', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Admin-Password':adminPw},
+    body: JSON.stringify({name})
+  });
+  document.getElementById('new-staff-name').value = '';
+  await loadStaff();
+}
+
+async function deleteStaff(id) {
+  if (!confirm('Remove this staff member?')) return;
+  await fetch(`/api/staff/${id}`, { method: 'DELETE', headers: {'X-Admin-Password': adminPw} });
+  await loadStaff();
+}
+
+function copyLink(token, btn) {
+  navigator.clipboard.writeText(`${BASE}/s/${token}`);
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = 'Copy Link', 2000);
+}
+
+// ── MESSAGES ──
+async function loadMessages() {
+  const res = await fetch('/api/messages', { headers: {'X-Admin-Password': adminPw} });
+  const msgs = await res.json();
+  const el = document.getElementById('msg-list');
+  if (!msgs.length) { el.innerHTML = '<div class="empty-state">No messages sent yet</div>'; return; }
+  el.innerHTML = msgs.map(m => `
+    <div class="msg-item">
+      <div class="msg-title">${m.title}</div>
+      <div class="msg-body">${m.body}</div>
+      <div class="msg-meta">${m.target === 'all' ? 'All staff' : staffName(m.target)} · ${formatDate(m.created_at)}</div>
+    </div>
+  `).join('');
+}
+
+function staffName(id) {
+  const s = staffData.find(x => String(x.id) === String(id));
+  return s ? s.name : 'Individual';
+}
+
+function formatDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-AU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+// ── SEND ──
+async function sendMessage() {
+  const title = document.getElementById('msg-title').value.trim();
+  const body = document.getElementById('msg-body').value.trim();
+  const target = document.getElementById('msg-target').value;
+  if (!body) { showToast('error', 'Enter a message first'); return; }
+
+  const btn = document.getElementById('send-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span>⏳</span> Sending...';
+
+  const res = await fetch('/api/send', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json','X-Admin-Password':adminPw},
+    body: JSON.stringify({title, body, target})
+  });
+  const data = await res.json();
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>⚡</span> SEND NOW';
+
+  if (res.ok) {
+    showToast('success', `✓ Sent to ${data.sent} of ${data.total} staff`);
+    document.getElementById('msg-body').value = '';
+    await loadMessages();
+  } else {
+    showToast('error', data.error || 'Send failed');
+  }
+}
+
+function showToast(type, msg) {
+  const t = document.getElementById('send-toast');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 4000);
+}
+
+// ── TABS ──
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', ['staff','links'][i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach((p,i) => {
+    p.classList.toggle('active', ['tab-staff','tab-links'][i] === 'tab-'+name);
+  });
+}
+</script>
+</body>
+</html>
