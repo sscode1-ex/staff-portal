@@ -334,6 +334,76 @@
     .main { grid-template-columns: 1fr; }
     header { padding: 0 16px; }
   }
+
+  /* ── QR MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    width: 100%;
+    max-width: 320px;
+    position: relative;
+  }
+  .modal-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  .modal-sub {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .qr-wrap {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    display: inline-block;
+    margin-bottom: 16px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 14px;
+    right: 16px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+  .modal-copy {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    word-break: break-all;
+    text-align: center;
+    margin-top: 4px;
+  }
+  .modal-copy:hover { border-color: var(--accent); color: var(--accent); }
 </style>
 </head>
 <body>
@@ -433,9 +503,24 @@
   </div>
 </div>
 
+<!-- QR MODAL -->
+<div class="modal-overlay" id="qr-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeQR()">×</button>
+    <div class="modal-name" id="qr-name"></div>
+    <div class="modal-sub">Scan to open staff portal</div>
+    <div class="qr-wrap">
+      <canvas id="qr-canvas"></canvas>
+    </div>
+    <button class="modal-copy" id="qr-link-text" onclick="copyQRLink()">Copy Link</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <script>
 let adminPw = '';
 let staffData = [];
+let currentQRLink = '';
 const BASE = window.location.origin;
 
 // ── AUTH ──
@@ -493,10 +578,13 @@ function renderLinks() {
   const el = document.getElementById('links-list');
   if (!staffData.length) { el.innerHTML = '<div class="empty-state">No staff added yet</div>'; return; }
   el.innerHTML = staffData.map(s => `
-    <div class="staff-item" style="flex-direction:column;align-items:flex-start;gap:6px;">
-      <div style="display:flex;width:100%;align-items:center;justify-content:space-between;">
+    <div class="staff-item" style="flex-direction:column;align-items:flex-start;gap:8px;">
+      <div style="display:flex;width:100%;align-items:center;justify-content:space-between;gap:6px;">
         <span class="staff-name">${s.name}</span>
-        <button class="link-btn" onclick="copyLink('${s.token}', this)">Copy Link</button>
+        <div style="display:flex;gap:6px;">
+          <button class="link-btn" onclick="showQR('${s.token}', '${s.name}')">📱 QR</button>
+          <button class="link-btn" onclick="copyLink('${s.token}', this)">Copy</button>
+        </div>
       </div>
       <span style="font-size:11px;color:var(--muted);word-break:break-all;">${BASE}/s/${s.token}</span>
     </div>
@@ -535,8 +623,40 @@ async function deleteStaff(id) {
 function copyLink(token, btn) {
   navigator.clipboard.writeText(`${BASE}/s/${token}`);
   btn.textContent = 'Copied!';
-  setTimeout(() => btn.textContent = 'Copy Link', 2000);
+  setTimeout(() => btn.textContent = 'Copy', 2000);
 }
+
+function showQR(token, name) {
+  currentQRLink = `${BASE}/s/${token}`;
+  document.getElementById('qr-name').textContent = name;
+  document.getElementById('qr-link-text').textContent = currentQRLink;
+
+  const canvas = document.getElementById('qr-canvas');
+  new QRious({
+    element: canvas,
+    value: currentQRLink,
+    size: 220,
+    background: '#ffffff',
+    foreground: '#000000'
+  });
+
+  document.getElementById('qr-modal').classList.add('open');
+}
+
+function closeQR() {
+  document.getElementById('qr-modal').classList.remove('open');
+}
+
+function copyQRLink() {
+  navigator.clipboard.writeText(currentQRLink);
+  const btn = document.getElementById('qr-link-text');
+  btn.textContent = 'Copied!';
+  setTimeout(() => btn.textContent = currentQRLink, 2000);
+}
+
+document.getElementById('qr-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeQR();
+});
 
 // ── MESSAGES ──
 async function loadMessages() {
