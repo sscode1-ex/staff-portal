@@ -1,17 +1,25 @@
 from flask import Flask, request, jsonify, render_template, abort
 from supabase import create_client
+import firebase_admin
+from firebase_admin import credentials, messaging
 import os
 import uuid
-import requests
+import json
 
 app = Flask(__name__)
 
 SUPABASE_URL = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY")
-FIREBASE_SERVER_KEY = os.environ.get("FIREBASE_SERVER_KEY")
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "admin123")
+FIREBASE_CREDENTIALS = os.environ.get("FIREBASE_CREDENTIALS")
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# ── FIREBASE INIT ──────────────────────────────────────────────────────────────
+if FIREBASE_CREDENTIALS:
+    cred_dict = json.loads(FIREBASE_CREDENTIALS)
+    cred = credentials.Certificate(cred_dict)
+    firebase_admin.initialize_app(cred)
 
 # ── ADMIN PANEL ────────────────────────────────────────────────────────────────
 
@@ -64,6 +72,14 @@ def get_messages():
     res = supabase.table("messages").select("*").order("created_at", desc=True).limit(50).execute()
     return jsonify(res.data)
 
+@app.route("/api/replies", methods=["GET"])
+def get_replies():
+    pw = request.headers.get("X-Admin-Password")
+    if pw != ADMIN_PASSWORD:
+        abort(401)
+    res = supabase.table("replies").select("*").order("created_at", desc=True).limit(100).execute()
+    return jsonify(res.data)
+
 @app.route("/api/send", methods=["POST"])
 def send_message():
     pw = request.headers.get("X-Admin-Password")
@@ -73,60 +89,55 @@ def send_message():
     data = request.json
     title = data.get("title", "Staff Update").strip()
     body = data.get("body", "").strip()
-    target = data.get("target", "all")  # "all" or staff id
+    target = data.get("target", "all")
 
     if not body:
         return jsonify({"error": "Message required"}), 400
 
     # Save message to DB
-    msg_record = {"title": title, "body": body, "target": target}
-    supabase.table("messages").insert(msg_record).execute()
+    msg_res = supabase.table("messages").insert({"title": title, "body": body, "target": target}).execute()
 
     # Get FCM tokens
     if target == "all":
-        res = supabase.table("staff").select("fcm_token").not_.is_("fcm_token", "null").execute()
-        tokens = [r["fcm_token"] for r in res.data if r["fcm_token"]]
+        res = supabase.table("staff").select("id,fcm_token").not_.is_("fcm_token", "null").execute()
     else:
-        res = supabase.table("staff").select("fcm_token").eq("id", target).execute()
-        tokens = [r["fcm_token"] for r in res.data if r["fcm_token"]]
+        res = supabase.table("staff").select("id,fcm_token").eq("id", target).execute()
+
+    staff_rows = [r for r in res.data if r["fcm_token"]]
 
     sent = 0
-    errors = []
-    for token in tokens:
-        result = send_fcm(token, title, body)
-        if result:
+    errors = 0
+    dead_tokens = []
+
+    for row in staff_rows:
+        try:
+            message = messaging.Message(
+                notification=messaging.Notification(title=title, body=body),
+                webpush=messaging.WebpushConfig(
+                    notification=messaging.WebpushNotification(
+                        title=title,
+                        body=body,
+                        icon="/static/icon.png",
+                    ),
+                    fcm_options=messaging.WebpushFCMOptions(link="/")
+                ),
+                token=row["fcm_token"],
+            )
+            messaging.send(message)
             sent += 1
-        else:
-            errors.append(token)
+        except Exception as e:
+            err_str = str(e)
+            print(f"FCM send error: {err_str}")
+            # If token is invalid/expired, clear it so staff re-registers
+            if "registration-token-not-registered" in err_str or "invalid-registration-token" in err_str:
+                dead_tokens.append(row["id"])
+            errors += 1
 
-    return jsonify({"sent": sent, "total": len(tokens), "errors": len(errors)})
+    # Clear dead tokens so staff gets prompted to re-enable
+    for staff_id in dead_tokens:
+        supabase.table("staff").update({"fcm_token": None}).eq("id", staff_id).execute()
 
-def send_fcm(fcm_token, title, body):
-    url = "https://fcm.googleapis.com/fcm/send"
-    headers = {
-        "Authorization": f"key={FIREBASE_SERVER_KEY}",
-        "Content-Type": "application/json"
-    }
-    payload = {
-        "to": fcm_token,
-        "notification": {
-            "title": title,
-            "body": body,
-            "icon": "/static/icon.png",
-            "click_action": "/"
-        },
-        "data": {
-            "title": title,
-            "body": body
-        }
-    }
-    try:
-        r = requests.post(url, json=payload, headers=headers, timeout=10)
-        result = r.json()
-        return result.get("success", 0) == 1
-    except Exception as e:
-        print(f"FCM error: {e}")
-        return False
+    return jsonify({"sent": sent, "total": len(staff_rows), "errors": errors})
 
 # ── STAFF PORTAL ───────────────────────────────────────────────────────────────
 
@@ -145,22 +156,49 @@ def register_fcm():
     fcm_token = data.get("fcm_token")
     if not token or not fcm_token:
         return jsonify({"error": "Missing fields"}), 400
+    # Always update — never skip even if already registered
     supabase.table("staff").update({"fcm_token": fcm_token}).eq("token", token).execute()
     return jsonify({"ok": True})
 
 @app.route("/api/messages/public", methods=["GET"])
 def public_messages():
-    # Staff can read recent messages (last 20)
     token = request.args.get("token")
     if not token:
         abort(401)
-    res_staff = supabase.table("staff").select("id").eq("token", token).execute()
+    res_staff = supabase.table("staff").select("id,fcm_token").eq("token", token).execute()
     if not res_staff.data:
         abort(401)
     staff_id = str(res_staff.data[0]["id"])
 
+    # Auto re-register check — return fcm status so frontend knows
+    has_token = bool(res_staff.data[0]["fcm_token"])
+
     res = supabase.table("messages").select("*").or_(f"target.eq.all,target.eq.{staff_id}").order("created_at", desc=True).limit(20).execute()
-    return jsonify(res.data)
+    return jsonify({"messages": res.data, "has_token": has_token})
+
+@app.route("/api/reply", methods=["POST"])
+def post_reply():
+    data = request.json
+    token = data.get("token")
+    message_id = data.get("message_id")
+    body = data.get("body", "").strip()
+
+    if not token or not body:
+        return jsonify({"error": "Missing fields"}), 400
+
+    res_staff = supabase.table("staff").select("id,name").eq("token", token).execute()
+    if not res_staff.data:
+        abort(401)
+
+    staff = res_staff.data[0]
+    supabase.table("replies").insert({
+        "message_id": message_id,
+        "staff_id": staff["id"],
+        "staff_name": staff["name"],
+        "body": body
+    }).execute()
+
+    return jsonify({"ok": True})
 
 if __name__ == "__main__":
     app.run(debug=True)

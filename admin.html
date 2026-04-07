@@ -479,6 +479,7 @@
       <div class="tabs">
         <div class="tab active" onclick="switchTab('staff')">👥 Staff</div>
         <div class="tab" onclick="switchTab('links')">🔗 Links</div>
+        <div class="tab" onclick="switchTab('replies')">💬 Replies</div>
       </div>
 
       <div class="tab-panel active" id="tab-staff">
@@ -496,6 +497,16 @@
           Share each staff member's unique link. They open it on their phone and tap "Enable Notifications".
         </div>
         <div class="staff-list" id="links-list">
+          <div class="empty-state">Loading...</div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-replies">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+          <span style="font-size:12px;color:var(--muted);">Staff replies to your messages</span>
+          <button class="link-btn" onclick="loadReplies()">Refresh</button>
+        </div>
+        <div class="staff-list" id="replies-list">
           <div class="empty-state">Loading...</div>
         </div>
       </div>
@@ -550,6 +561,7 @@ function doLogout() {
 async function loadAll() {
   await loadStaff();
   await loadMessages();
+  await loadReplies();
 }
 
 // ── STAFF ──
@@ -725,11 +737,27 @@ function showToast(type, msg) {
 // ── TABS ──
 function switchTab(name) {
   document.querySelectorAll('.tab').forEach((t,i) => {
-    t.classList.toggle('active', ['staff','links'][i] === name);
+    t.classList.toggle('active', ['staff','links','replies'][i] === name);
   });
   document.querySelectorAll('.tab-panel').forEach((p,i) => {
-    p.classList.toggle('active', ['tab-staff','tab-links'][i] === 'tab-'+name);
+    p.classList.toggle('active', ['tab-staff','tab-links','tab-replies'][i] === 'tab-'+name);
   });
+}
+
+async function loadReplies() {
+  const res = await fetch('/api/replies', { headers: {'X-Admin-Password': adminPw} });
+  const replies = await res.json();
+  const el = document.getElementById('replies-list');
+  if (!replies.length) { el.innerHTML = '<div class="empty-state">No replies yet</div>'; return; }
+  el.innerHTML = replies.map(r => `
+    <div class="staff-item" style="flex-direction:column;align-items:flex-start;gap:4px;">
+      <div style="display:flex;width:100%;justify-content:space-between;">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:13px;">${r.staff_name}</span>
+        <span style="font-size:11px;color:var(--muted);">${formatDate(r.created_at)}</span>
+      </div>
+      <span style="font-size:13px;color:var(--muted);line-height:1.5;">${r.body}</span>
+    </div>
+  `).join('');
 }
 </script>
 </body>
