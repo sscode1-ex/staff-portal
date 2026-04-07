@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0a0a0f">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>STAFF-PORTAL</title>
 <link rel="manifest" href="/static/manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,13 +21,7 @@
     --green: #22c55e;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; min-height: 100vh; }
 
   .top-bar {
     background: var(--surface);
@@ -39,12 +32,7 @@
     align-items: center;
     justify-content: space-between;
   }
-  .logo {
-    font-family: 'Syne', sans-serif;
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: -0.5px;
-  }
+  .logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; }
   .logo span { color: var(--accent); }
   .staff-badge {
     background: var(--surface2);
@@ -55,34 +43,19 @@
     color: var(--muted);
   }
 
-  .content {
-    padding: 24px 20px;
-    max-width: 480px;
-    margin: 0 auto;
-  }
+  .content { padding: 24px 20px; max-width: 480px; margin: 0 auto; }
 
-  /* NOTIFICATION BANNER */
   .notif-banner {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px;
     margin-bottom: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
   }
-  .notif-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-  }
-  .notif-desc {
-    color: var(--muted);
-    font-size: 12px;
-    line-height: 1.6;
-  }
+  .notif-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .notif-desc { color: var(--muted); font-size: 12px; line-height: 1.6; margin-bottom: 12px; }
   .notif-btn {
+    width: 100%;
     background: var(--accent);
     color: #fff;
     border: none;
@@ -92,20 +65,12 @@
     font-size: 15px;
     font-weight: 700;
     cursor: pointer;
-    text-align: center;
-    transition: opacity 0.2s;
   }
-  .notif-btn:hover { opacity: 0.9; }
   .notif-btn:disabled { opacity: 0.5; }
-  .notif-status {
-    font-size: 12px;
-    text-align: center;
-    padding: 4px 0;
-  }
+  .notif-status { font-size: 12px; text-align: center; padding: 8px 0; }
   .notif-status.ok { color: var(--green); }
   .notif-status.err { color: #ef4444; }
 
-  /* MESSAGES */
   .section-title {
     font-size: 11px;
     letter-spacing: 2px;
@@ -122,33 +87,42 @@
     border-left: 3px solid var(--accent);
     animation: slideIn 0.3s ease;
   }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
+  @keyframes slideIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  .msg-card-title { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+  .msg-card-body { color: var(--muted); font-size: 13px; line-height: 1.6; }
+  .msg-card-time { font-size: 11px; color: var(--muted); margin-top: 10px; opacity: 0.6; }
+
+  .reply-area { margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px; }
+  .reply-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    outline: none;
+    resize: none;
+    min-height: 60px;
+    margin-bottom: 8px;
   }
-  .msg-card-title {
+  .reply-input:focus { border-color: var(--accent); }
+  .reply-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 16px;
     font-family: 'Syne', sans-serif;
-    font-size: 15px;
+    font-size: 13px;
     font-weight: 700;
-    margin-bottom: 6px;
+    cursor: pointer;
   }
-  .msg-card-body {
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.6;
-  }
-  .msg-card-time {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 10px;
-    opacity: 0.6;
-  }
-  .empty-state {
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    padding: 40px 0;
-  }
+  .reply-btn:disabled { opacity: 0.5; }
+  .reply-sent { color: var(--green); font-size: 12px; margin-top: 6px; }
+
+  .empty-state { text-align: center; color: var(--muted); font-size: 13px; padding: 40px 0; }
   .empty-icon { font-size: 32px; margin-bottom: 12px; }
 
   .refresh-btn {
@@ -166,7 +140,6 @@
     font-size: 12px;
     cursor: pointer;
     margin-top: 16px;
-    transition: color 0.2s, border-color 0.2s;
   }
   .refresh-btn:hover { color: var(--text); border-color: var(--text); }
 </style>
@@ -180,7 +153,6 @@
 
 <div class="content">
 
-  <!-- NOTIFICATION SETUP -->
   <div class="notif-banner" id="notif-banner">
     <div class="notif-title">🔔 Enable Notifications</div>
     <div class="notif-desc">Tap below to receive instant updates from management on this device.</div>
@@ -188,19 +160,14 @@
     <div class="notif-status" id="notif-status"></div>
   </div>
 
-  <!-- MESSAGES -->
   <div class="section-title">Recent Messages</div>
   <div class="msg-list" id="msg-list">
-    <div class="empty-state">
-      <div class="empty-icon">📭</div>
-      <div>No messages yet</div>
-    </div>
+    <div class="empty-state"><div class="empty-icon">📭</div><div>No messages yet</div></div>
   </div>
   <button class="refresh-btn" onclick="loadMessages()">↻ Refresh</button>
 
 </div>
 
-<!-- Firebase -->
 <script type="module">
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
   import { getMessaging, getToken, onMessage } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging.js';
@@ -217,13 +184,12 @@
   const VAPID_KEY = "BDnA55njAqRzirglvglYJCbXAySRnCbaIWSUvdeoaA-gTRDHrFscsJjEfFZSzaDw8Dw_gKq95qzKw0QPpqZMgsw";
   const STAFF_TOKEN = "{{ staff.token }}";
 
-  const app = initializeApp(firebaseConfig);
-  const messaging = getMessaging(app);
+  const fbApp = initializeApp(firebaseConfig);
+  const messaging = getMessaging(fbApp);
 
-  // Check if already registered
-  if (localStorage.getItem('fcm_registered_' + STAFF_TOKEN)) {
-    document.getElementById('notif-banner').style.display = 'none';
-  }
+  window._messaging = messaging;
+  window._VAPID_KEY = VAPID_KEY;
+  window._STAFF_TOKEN = STAFF_TOKEN;
 
   window.enableNotifications = async function() {
     const btn = document.getElementById('notif-btn');
@@ -235,7 +201,7 @@
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
         status.className = 'notif-status err';
-        status.textContent = '✕ Permission denied. Check your browser settings.';
+        status.textContent = '✕ Permission denied. Check browser settings.';
         btn.disabled = false;
         btn.textContent = 'Try Again';
         return;
@@ -244,12 +210,8 @@
       const reg = await navigator.serviceWorker.register('/static/firebase-messaging-sw.js');
       await navigator.serviceWorker.ready;
 
-      const token = await getToken(messaging, {
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: reg
-      });
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
 
-      // Register with server
       const res = await fetch('/api/register-fcm', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
@@ -260,36 +222,20 @@
         status.className = 'notif-status ok';
         status.textContent = '✓ Notifications enabled!';
         btn.textContent = '✓ Enabled';
-        localStorage.setItem('fcm_registered_' + STAFF_TOKEN, '1');
-        setTimeout(() => {
-          document.getElementById('notif-banner').style.display = 'none';
-        }, 2000);
+        setTimeout(() => document.getElementById('notif-banner').style.display = 'none', 2000);
       } else {
         throw new Error('Server error');
       }
-
     } catch (err) {
       status.className = 'notif-status err';
-      status.textContent = '✕ Error: ' + err.message;
+      status.textContent = '✕ ' + err.message;
       btn.disabled = false;
       btn.textContent = 'Try Again';
     }
   };
 
-  // Foreground messages
   onMessage(messaging, (payload) => {
-    const list = document.getElementById('msg-list');
-    const card = document.createElement('div');
-    card.className = 'msg-card';
-    card.innerHTML = `
-      <div class="msg-card-title">${payload.notification?.title || payload.data?.title || 'Update'}</div>
-      <div class="msg-card-body">${payload.notification?.body || payload.data?.body || ''}</div>
-      <div class="msg-card-time">Just now</div>
-    `;
-    // Remove empty state if present
-    const empty = list.querySelector('.empty-state');
-    if (empty) empty.remove();
-    list.insertBefore(card, list.firstChild);
+    loadMessages();
   });
 </script>
 
@@ -300,7 +246,20 @@ async function loadMessages() {
   try {
     const res = await fetch(`/api/messages/public?token=${STAFF_TOKEN}`);
     if (!res.ok) return;
-    const msgs = await res.json();
+    const data = await res.json();
+
+    // If token was cleared server-side, show the enable banner again
+    if (!data.has_token) {
+      document.getElementById('notif-banner').style.display = 'block';
+      document.getElementById('notif-btn').disabled = false;
+      document.getElementById('notif-btn').textContent = 'Re-enable Notifications';
+      document.getElementById('notif-status').className = 'notif-status err';
+      document.getElementById('notif-status').textContent = '⚠ Notifications need to be re-enabled';
+    } else {
+      document.getElementById('notif-banner').style.display = 'none';
+    }
+
+    const msgs = data.messages;
     const el = document.getElementById('msg-list');
     if (!msgs.length) {
       el.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><div>No messages yet</div></div>';
@@ -311,15 +270,50 @@ async function loadMessages() {
         <div class="msg-card-title">${m.title}</div>
         <div class="msg-card-body">${m.body}</div>
         <div class="msg-card-time">${formatDate(m.created_at)}</div>
+        <div class="reply-area">
+          <textarea class="reply-input" id="reply-${m.id}" placeholder="Type a reply..."></textarea>
+          <button class="reply-btn" onclick="sendReply(${m.id}, this)">↩ Reply</button>
+          <div class="reply-sent" id="reply-sent-${m.id}" style="display:none;">✓ Reply sent</div>
+        </div>
       </div>
     `).join('');
-  } catch(e) {}
+  } catch(e) { console.error(e); }
+}
+
+async function sendReply(messageId, btn) {
+  const textarea = document.getElementById(`reply-${messageId}`);
+  const body = textarea.value.trim();
+  if (!body) return;
+
+  btn.disabled = true;
+  btn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch('/api/reply', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ token: STAFF_TOKEN, message_id: messageId, body })
+    });
+
+    if (res.ok) {
+      textarea.value = '';
+      document.getElementById(`reply-sent-${messageId}`).style.display = 'block';
+      btn.textContent = '✓ Sent';
+      setTimeout(() => {
+        btn.textContent = '↩ Reply';
+        btn.disabled = false;
+        document.getElementById(`reply-sent-${messageId}`).style.display = 'none';
+      }, 3000);
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '↩ Reply';
+  }
 }
 
 function formatDate(iso) {
   if (!iso) return '';
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-AU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  return new Date(iso).toLocaleDateString('en-AU', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 }
 
 loadMessages();
