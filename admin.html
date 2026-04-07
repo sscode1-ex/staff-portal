@@ -516,7 +516,7 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
 <script>
 let adminPw = '';
 let staffData = [];
@@ -632,12 +632,12 @@ function showQR(token, name) {
   document.getElementById('qr-link-text').textContent = currentQRLink;
 
   const canvas = document.getElementById('qr-canvas');
-  canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height);
-
-  QRCode.toCanvas(canvas, currentQRLink, {
-    width: 220,
-    margin: 1,
-    color: { dark: '#000000', light: '#ffffff' }
+  new QRious({
+    element: canvas,
+    value: currentQRLink,
+    size: 220,
+    background: '#ffffff',
+    foreground: '#000000'
   });
 
   document.getElementById('qr-modal').classList.add('open');
