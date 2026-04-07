@@ -153,7 +153,7 @@
 
 <div class="content">
 
-  <div class="notif-banner" id="notif-banner">
+  <div class="notif-banner" id="notif-banner" style="display:none;">
     <div class="notif-title">🔔 Enable Notifications</div>
     <div class="notif-desc">Tap below to receive instant updates from management on this device.</div>
     <button class="notif-btn" id="notif-btn" onclick="enableNotifications()">Enable Notifications</button>
@@ -248,10 +248,8 @@ async function loadMessages() {
     if (!res.ok) return;
     const data = await res.json();
 
-    // Hide banner if token is active
-    if (data.has_token) {
-      document.getElementById('notif-banner').style.display = 'none';
-    }
+    // Show banner only if no token registered
+    document.getElementById('notif-banner').style.display = data.has_token ? 'none' : 'block';
 
     const msgs = data.messages;
     const el = document.getElementById('msg-list');
