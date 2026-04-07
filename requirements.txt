@@ -2,3 +2,4 @@ flask
 supabase
 requests
 gunicorn
+firebase-admin
