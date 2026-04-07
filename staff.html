@@ -222,6 +222,7 @@
         status.className = 'notif-status ok';
         status.textContent = '✓ Notifications enabled!';
         btn.textContent = '✓ Enabled';
+        localStorage.setItem('notif_enabled_' + STAFF_TOKEN, '1');
         setTimeout(() => document.getElementById('notif-banner').style.display = 'none', 2000);
       } else {
         throw new Error('Server error');
@@ -236,6 +237,8 @@
 
   onMessage(messaging, (payload) => {
     loadMessages();
+// Auto-refresh every 30 seconds
+setInterval(loadMessages, 30000);
   });
 </script>
 
@@ -248,8 +251,9 @@ async function loadMessages() {
     if (!res.ok) return;
     const data = await res.json();
 
-    // Show banner only if no token registered
-    document.getElementById('notif-banner').style.display = data.has_token ? 'none' : 'block';
+    // Hide banner if server has token OR localStorage says enabled
+    const localEnabled = localStorage.getItem('notif_enabled_' + STAFF_TOKEN);
+    document.getElementById('notif-banner').style.display = (data.has_token || localEnabled) ? 'none' : 'block';
 
     const msgs = data.messages;
     const el = document.getElementById('msg-list');
